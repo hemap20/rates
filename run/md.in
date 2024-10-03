@@ -1,0 +1,5 @@
+MDtime = 5000000
+dt = 1 
+MDprint = 5 
+MDeq = 1
+trj = 0  

@@ -1,0 +1,3 @@
+/var/spool/pbs/mom_priv/jobs/10542.om.SC: line 11: export: `shm:dapl': not a valid identifier
+/var/spool/pbs/mom_priv/jobs/10542.om.SC: line 12: export: `/scratch/krishna': not a valid identifier
+Working directory is /home/krishna/density/run/tune_forcefield/newrun/llepsilon_2.6_ls_4

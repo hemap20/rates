@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "print.C": "cpp",
+        "main.C": "cpp",
+        "mathfunc.C": "cpp",
+        "CalDens.C": "cpp"
+    }
+}
