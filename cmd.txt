@@ -1,0 +1,17 @@
+###to find a file: 
+sudo find / -name "contrib" 2>/dev/null
+
+###make the local rep same as remote rep
+git fetch origin
+git reset --hard origin/branch_name
+
+###make the remote rep same as  local
+git push origin branch_name --force
+
+##plotting with xmgrace
+(x:col1 y:col2) xmgrace file.txt
+(x:cola y:colb) xmgrace -block file.txt -bxy a:bin
+
+##cumulative avg of temp, TE from md.out
+awk 'NR>1 {temp_sum += $2; totener_sum += $5; temp_count++; print $1, temp_sum/temp_count, totener_sum/temp_count}' md.out > cumulative_average.txt
+xmgrace cumulative_average.txt
