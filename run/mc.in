@@ -1,0 +1,6 @@
+MCiter = 0
+MCeq = 0
+MaxAtomMove = 0.2
+ProbMove = 1.01 
+printAtMcstep = 10 
+seed = 0
