@@ -49,7 +49,7 @@ double CalEner1(double **PosIons, int natoms, float **boxcell, int *batom1, int 
 					}
 					else if (pot.compare("ms") == 0) 
 					{
-						potfunc = morse_pot;
+						potfunc = morse_pot; 
 						Par[0] = bondpar[natom][0];
 						Par[1] = bondpar[natom][1];
 						Par[2] = bondpar[natom][2];
@@ -92,7 +92,6 @@ double CalEner1(double **PosIons, int natoms, float **boxcell, int *batom1, int 
 			}
 		}
 	}
-    
     return Pot;
 }
 
@@ -133,23 +132,21 @@ double CalEner(double **PosIons, int natoms, float **boxcell, int nbatoms, int *
                 #pragma omp critical
                 cerr << "Check your input, function not available in this version of the Program" << endl;
             }
-
             // Accumulate potential
             Pot += potfunc(Dist, Par);
         }
     }
-
     return Pot;
 }
 
 void CalFor(double **PosIons, double **ForceIons, int natoms, float **boxcell, int nbatoms, int *atom1, int *atom2, string *npot, double **npar)
 {
-    double Dist;
-    double *Par;
 
     // Allocate Par in the parallel region to avoid race conditions
     #pragma omp parallel
     {
+		double Dist;
+		double *Par;
         Par = new double[10]; // Allocate memory for parameters per thread
 
         void (*forcefunc)(int, int, double, double **, double **, double *, float **);
@@ -175,7 +172,9 @@ void CalFor(double **PosIons, double **ForceIons, int natoms, float **boxcell, i
             }
             else
             {
+				#pragma omp critical
                 cerr << "Check your input, function not available in this version of the Program";
+				continue;
             }
 
             // Call the force function
@@ -199,13 +198,8 @@ double CalEnerFor(double **PosIons, int natoms, float **boxcell, double **ForceI
 
 	Par=new double [10]; //upto 10 empirical parameters
 
-
-
-
 	double (*potfunc)(double, double *);
 	void (*forcefunc)(int, int, double, double **, double **, double *, float **);	
-
-
 
 	ifstream FileIn(filename.c_str(),ios::in);
 	if(!FileIn)
@@ -245,7 +239,6 @@ double CalEnerFor(double **PosIons, int natoms, float **boxcell, double **ForceI
 			cerr<<"Check your input, function not available in this version of the Program";
 		}
 
-
 		if(bonded)
 		{
 			getline(FileIn, garbage);
@@ -274,9 +267,7 @@ double CalEnerFor(double **PosIons, int natoms, float **boxcell, double **ForceI
 				exit (EXIT_FAILURE);
 			}
 
-
 			Pot = Pot + potfunc(Dist, Par); 
-
 
 			if(forces)
 				forcefunc(atom1, atom2, Dist, PosIons, ForceIons, Par, boxcell);
@@ -292,31 +283,23 @@ double CalEnerFor(double **PosIons, int natoms, float **boxcell, double **ForceI
 
 double CalKinEner(double **Vel, int natoms, float *mass)
 {
-
 	double KEner=0;
-	for(int i=0;i<natoms;i++)*********************
+	#pragma omp parallel for reduction(+:KEner)
+	for(int i=0;i<natoms;i++)
 	{		
 		for(int j=0;j<3;j++)
 		{
 			KEner = KEner + mass[i]*Vel[i][j]*Vel[i][j]/2;
 		}
-
 	}
-
 	//KEner obtained is in g-angs2/mol-fs2, converting it into kJ/mol
 	return KEner*1e4;
-
-
+	
 }
 
 float CalTemp(double KEner, int natoms)
 {
 	float Temp;
-
-
 	Temp = 2*KEner/(3*natoms-1)*1e6/KB/AVG;
-
 	return Temp;
-
-
 }

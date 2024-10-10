@@ -136,21 +136,15 @@ int main(int argc, char **argv)
 		cout<<"ncycles: "<<ncycle<<endl;
 	}
 
-
-
-
 	bool minimize;
 
 	InputIn>>garbage>>garbage;
         InputIn>>minimize;                      //whether to minimize or not
 
-
-
 	if(minimize)
 		cout<<"****Perform minimization****"<<endl;
 
 	InputIn.close();
-
 
 	ifstream MDIn("md.in",ios::in);
 	if(!MDIn)
@@ -159,10 +153,8 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-
 	MDIn>>garbage>>garbage;
 	MDIn>>MDtime;
-
 
 	MDIn>>garbage>>garbage;
 	MDIn>>dt;                                    
@@ -178,10 +170,7 @@ int main(int argc, char **argv)
 	MDIn>>garbage>>garbage;
 	MDIn>>trj;                             
 
-
-
 	MDIn.close();
-
 
 	int nMDeq = MDeq/dt;
 
@@ -200,12 +189,10 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-
 	cout<<"Temperature of the system:\t\t"<<Temp<<" K"<<endl;
 
 	getline(PosIn, garbage);
 	istringstream StrStream(garbage);
-
 
 	int n_atomtype=0;
 
@@ -216,12 +203,9 @@ int main(int argc, char **argv)
 			n_atomtype = n_atomtype + 1;
 	}
 
-
 	string *atomtype;
 	atomtype=new string [n_atomtype];
-
 	istringstream strstream(garbage);
-
 	tmp = 0;
 
 	while(strstream)
@@ -235,14 +219,11 @@ int main(int argc, char **argv)
 	}
 
 	int *natoms_type, natoms;  //number of atoms for each type
-
 	natoms_type=new int [n_atomtype];
 	natoms=0;
 
-
 	//get box cell vectors
 	float **boxcell;
-
 	boxcell=new float * [3];
 
 	for(i = 0; i<3;i++)
@@ -259,7 +240,9 @@ int main(int argc, char **argv)
 			PosIn>>boxcell[i][j];
 		}
 	}
-
+	
+	getline(PosIn, garbage);
+	getline(PosIn, garbage);
 
 	for(i=0;i<n_atomtype;i++)
 	{
@@ -267,25 +250,18 @@ int main(int argc, char **argv)
 		natoms=natoms+natoms_type[i];
 	}
 
-
 	getline(PosIn, garbage);
-
 	getline(PosIn, garbage);
-
-
-
 
 	double **PosIons, **ForceIons, **vel;
 	int **fixatoms;
 	float *mass;
-
 
 	mass=new float [natoms];
 	PosIons=new double * [natoms];
 	ForceIons=new double *[natoms];
 	vel=new double *[natoms];
 	fixatoms=new int *[natoms];
-
 
 	for(i=0;i<natoms;i++)
 	{
@@ -294,9 +270,6 @@ int main(int argc, char **argv)
 		vel[i]=new double [3];		
 		fixatoms[i]=new int [3];
 	}
-
-
-
 
 	//getting positions of each atom
 	//

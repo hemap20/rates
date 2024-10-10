@@ -6,6 +6,7 @@
         "CalDens.C": "cpp",
         "pairlist.C": "cpp",
         "CalEnerFor.C": "cpp",
-        "pot_forc.C": "cpp"
+        "pot_forc.C": "cpp",
+        "dist.C": "cpp"
     }
 }
