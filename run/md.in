@@ -1,5 +1,5 @@
-MDtime = 1000000
+MDtime = 100
 dt = 1 
 MDprint = 5 
-MDeq = 1000000
+MDeq = 1
 trj = 0  
