@@ -111,7 +111,7 @@ void montecarlo(double **PosIons, int natoms, float **boxcell, float *mass, stri
 
 
 
-		for(unsigned int i=0;i<niter*nrun;i++)************************
+		for(unsigned int i=0;i<niter*nrun;i++)
 		{
 
 			//pick a random number and decide whether to swap the atom or not

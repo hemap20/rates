@@ -7,6 +7,9 @@
         "pairlist.C": "cpp",
         "CalEnerFor.C": "cpp",
         "pot_forc.C": "cpp",
-        "dist.C": "cpp"
+        "dist.C": "cpp",
+        "md.C": "cpp",
+        "minimization.C": "cpp",
+        "montecarlo.C": "cpp"
     }
 }

@@ -11,178 +11,185 @@
 // The following function calculates energy for a single atom selected 
 double CalEner1(double **PosIons, int natoms, float **boxcell, int *batom1, int *batom2, string *bondpot, int *nbatom1, int *nbatom2, string *nonbondpot, double **bondpar, double **nonbondpar, int **pairs, int randatom, int intdoub, int randatom2)
 {
-    double Pot = 0;
-    double Dist;
-    int tmp, natom;
-    string pot;
 
-    // Start parallel region
-    #pragma omp parallel private(tmp, Dist, pot, natom)
+	double Pot = 0;
+	double Dist;
+	double *Par;
+	int tmp, natom;
+	string pot;
+
+	Par=new double [10]; //upto 10 empirical parameters
+
+	// cout<<"randatom="<<randatom<<endl;
+
+	double (*potfunc)(double, double *);
+
+	for(int i=0;i<natoms;i++)
 	{
-		#pragma omp for reduction(+:Pot)
-		for (int i = 0; i < natoms; i++) 
+		if(intdoub==1 && i==randatom2)
 		{
-			// Use dynamic memory allocation for Par inside the parallel region
-			double Par[10]; // up to 10 empirical parameters
-			double (*potfunc)(double, double *) = nullptr; // Function pointer initialization
+			continue;
+	
+		}
+		//calculating distance between atoms
+		if(pairs[randatom][i] != 0)
+		{
+			tmp = pairs[randatom][i];
+			// cout<<tmp<<endl;
 
-			if (intdoub == 1 && i == randatom2) {
-				continue; // Skip this iteration if condition is met
-			}
-
-			// Calculating distance between atoms
-			if (pairs[randatom][i] != 0) 
+			if(tmp<0)
 			{
-				tmp = pairs[randatom][i];
+				natom = -tmp -1;
+				pot= bondpot[natom];
 
-				if (tmp < 0) 
+				// cout<<endl<<natom<<"\t"<<pot<<"\t"<<batom1[natom]<<"\t"<<batom2[natom]<<endl;
+
+				Dist=dist(PosIons, batom1[natom], batom2[natom], boxcell);
+
+				// cout<<"Distance between atoms: "<<Dist;
+
+				if(pot.compare("lj") ==0)
 				{
-					natom = -tmp - 1;
-					pot = bondpot[natom];
-					Dist = dist(PosIons, batom1[natom], batom2[natom], boxcell);
-
-					if (pot.compare("lj") == 0) 
-					{
-						potfunc = lj_pot;
-						Par[0] = bondpar[natom][0];
-						Par[1] = bondpar[natom][1];
-					}
-					else if (pot.compare("ms") == 0) 
-					{
-						potfunc = morse_pot; 
-						Par[0] = bondpar[natom][0];
-						Par[1] = bondpar[natom][1];
-						Par[2] = bondpar[natom][2];
-					}
-					else 
-					{
-						#pragma omp critical
-						cerr << "Check your input, function not available in this version of the Program" << endl;
-					}
-
-				} 
-				else 
+					potfunc = lj_pot;
+					Par[0] = bondpar[natom][0];
+					Par[1] = bondpar[natom][1];
+				}
+				else if(pot.compare("ms") ==0)
 				{
-					natom = tmp - 1;
-					pot = nonbondpot[natom];
-					Dist = dist(PosIons, nbatom1[natom], nbatom2[natom], boxcell);
-
-					if (pot.compare("lj") == 0) 
-					{
-						potfunc = lj_pot;
-						Par[0] = nonbondpar[natom][0];
-						Par[1] = nonbondpar[natom][1];
-					}
-					else if (pot.compare("ms") == 0) 
-					{
-						potfunc = morse_pot;
-						Par[0] = nonbondpar[natom][0];
-						Par[1] = nonbondpar[natom][1];
-						Par[2] = nonbondpar[natom][2];
-					}
-					else 
-					{
-						#pragma omp critical
-						cerr << "Check your input, function not available in this version of the Program" << endl;
-					}
+					potfunc = morse_pot;
+					Par[0] = bondpar[natom][0];
+					Par[1] = bondpar[natom][1];
+					Par[2] = bondpar[natom][2];
 				}
 
-				// Calculate potential at every step
-				Pot += potfunc(Dist, Par);
+				else
+				{
+					cerr<<"Check your input, function not available in this version of the Program";
+				}
+
 			}
+			else
+			{
+				natom = tmp -1;
+				pot= nonbondpot[natom];
+
+				// cout<<endl<<natom<<"\t"<<pot<<"\t"<<nbatom1[natom]<<"\t"<<nbatom2[natom]<<endl;
+
+				Dist=dist(PosIons, nbatom1[natom], nbatom2[natom], boxcell);
+
+				// cout<<"Distance between atoms: "<<Dist;
+				
+				if(pot.compare("lj") ==0)
+				{
+					potfunc = lj_pot;
+					Par[0] = nonbondpar[natom][0];
+					Par[1] = nonbondpar[natom][1];
+				}
+				else if(pot.compare("ms") ==0)
+				{
+					potfunc = morse_pot;
+					Par[0] = nonbondpar[natom][0];
+					Par[1] = nonbondpar[natom][1];
+					Par[2] = nonbondpar[natom][2];
+				}
+
+				else
+				{
+					cerr<<"Check your input, function not available in this version of the Program";
+				}
+
+
+			}
+
+			// cout<<"Potential at every step: "<< Pot<<endl;
+
+			Pot = Pot + potfunc(Dist, Par);
+
 		}
 	}
-    return Pot;
-}
 
+	delete [] Par;	
+	return Pot;
+}
 
 double CalEner(double **PosIons, int natoms, float **boxcell, int nbatoms, int *atom1, int *atom2, string *npot, double **npar)
 {
-    double Pot = 0;
-    
-    // Start parallel region
-    #pragma omp parallel reduction(+:Pot)
-    {
-        double Dist;
-        double Par[10]; // Up to 10 empirical parameters
-        double (*potfunc)(double, double *);
+	double Pot = 0;
+	double Dist;
+	double *Par;
 
-        // Parallel for loop
-        #pragma omp for
-        for (int i = 0; i < nbatoms; i++)
-        {
-            // Calculating distance between atoms
-            Dist = dist(PosIons, atom1[i], atom2[i], boxcell);
+	Par=new double [10]; //upto 10 empirical parameters
 
-            if (npot[i].compare("lj") == 0)
-            {
-                potfunc = lj_pot;
-                Par[0] = npar[i][0];
-                Par[1] = npar[i][1];
-            }
-            else if (npot[i].compare("ms") == 0)
-            {
-                potfunc = morse_pot;
-                Par[0] = npar[i][0];
-                Par[1] = npar[i][1];
-                Par[2] = npar[i][2];
-            }
-            else
-            {
-                #pragma omp critical
-                cerr << "Check your input, function not available in this version of the Program" << endl;
-            }
-            // Accumulate potential
-            Pot += potfunc(Dist, Par);
-        }
-    }
-    return Pot;
+	double (*potfunc)(double, double *);
+
+	for(int i=0;i<nbatoms;i++)
+	{
+		//calculating distance between atoms
+		Dist=dist(PosIons, atom1[i], atom2[i], boxcell);
+
+		if(npot[i].compare("lj") ==0)
+		{
+			potfunc = lj_pot;
+			Par[0] = npar[i][0];
+			Par[1] = npar[i][1];
+		}
+		else if(npot[i].compare("ms") ==0)
+		{
+			potfunc = morse_pot;
+			Par[0] = npar[i][0];
+			Par[1] = npar[i][1];
+			Par[2] = npar[i][2];
+		}
+
+		else
+		{
+			cerr<<"Check your input, function not available in this version of the Program";
+		}
+
+		Pot = Pot + potfunc(Dist, Par);
+	}
+	delete [] Par;	
+	return Pot;
 }
 
-void CalFor(double **PosIons, double **ForceIons, int natoms, float **boxcell, int nbatoms, int *atom1, int *atom2, string *npot, double **npar)
+void CalFor(double **PosIons, double **ForceIons,  int natoms, float **boxcell, int nbatoms, int *atom1, int *atom2, string *npot, double **npar)
 {
+	double Pot = 0;
+	double Dist;
+	double *Par;
 
-    // Allocate Par in the parallel region to avoid race conditions
-    #pragma omp parallel
-    {
-		double Dist;
-		double *Par;
-        Par = new double[10]; // Allocate memory for parameters per thread
+	Par=new double [10]; //upto 10 empirical parameters
 
-        void (*forcefunc)(int, int, double, double **, double **, double *, float **);
+	void (*forcefunc)(int, int, double, double **, double **, double *, float **);	
+	for(int i=0;i<nbatoms;i++)
+	{
+		//calculating distance between atoms
+		Dist=dist(PosIons, atom1[i], atom2[i], boxcell);
+		if(npot[i].compare("lj") ==0)
+		{
+			forcefunc = lj_force;
+			Par[0] = npar[i][0];
+			Par[1] = npar[i][1];
+		}
+		else if(npot[i].compare("ms") ==0)
+		{
+			forcefunc = morse_force;
+			Par[0] = npar[i][0];
+			Par[1] = npar[i][1];
+			Par[2] = npar[i][2];
+		}
 
-        #pragma omp for 
-        for (int i = 0; i < nbatoms; i++)
-        {
-            // Calculate distance between atoms
-            Dist = dist(PosIons, atom1[i], atom2[i], boxcell);
+		else
+		{
+			cerr<<"Check your input, function not available in this version of the Program";
+		}
 
-            if (npot[i].compare("lj") == 0)
-            {
-                forcefunc = lj_force;
-                Par[0] = npar[i][0];
-                Par[1] = npar[i][1];
-            }
-            else if (npot[i].compare("ms") == 0)
-            {
-                forcefunc = morse_force;
-                Par[0] = npar[i][0];
-                Par[1] = npar[i][1];
-                Par[2] = npar[i][2];
-            }
-            else
-            {
-				#pragma omp critical
-                cerr << "Check your input, function not available in this version of the Program";
-				continue;
-            }
+		forcefunc(atom1[i], atom2[i], Dist, PosIons, ForceIons, Par, boxcell);
 
-            // Call the force function
-            forcefunc(atom1[i], atom2[i], Dist, PosIons, ForceIons, Par, boxcell);
-        }
+	}
 
-        delete[] Par; // Free memory for Par per thread
-    }
+	delete [] Par;
+
 }
 
 
@@ -198,8 +205,13 @@ double CalEnerFor(double **PosIons, int natoms, float **boxcell, double **ForceI
 
 	Par=new double [10]; //upto 10 empirical parameters
 
+
+
+
 	double (*potfunc)(double, double *);
 	void (*forcefunc)(int, int, double, double **, double **, double *, float **);	
+
+
 
 	ifstream FileIn(filename.c_str(),ios::in);
 	if(!FileIn)
@@ -239,6 +251,7 @@ double CalEnerFor(double **PosIons, int natoms, float **boxcell, double **ForceI
 			cerr<<"Check your input, function not available in this version of the Program";
 		}
 
+
 		if(bonded)
 		{
 			getline(FileIn, garbage);
@@ -267,7 +280,9 @@ double CalEnerFor(double **PosIons, int natoms, float **boxcell, double **ForceI
 				exit (EXIT_FAILURE);
 			}
 
+
 			Pot = Pot + potfunc(Dist, Par); 
+
 
 			if(forces)
 				forcefunc(atom1, atom2, Dist, PosIons, ForceIons, Par, boxcell);
@@ -283,23 +298,31 @@ double CalEnerFor(double **PosIons, int natoms, float **boxcell, double **ForceI
 
 double CalKinEner(double **Vel, int natoms, float *mass)
 {
+
 	double KEner=0;
-	#pragma omp parallel for reduction(+:KEner)
 	for(int i=0;i<natoms;i++)
 	{		
 		for(int j=0;j<3;j++)
 		{
 			KEner = KEner + mass[i]*Vel[i][j]*Vel[i][j]/2;
 		}
+
 	}
+
 	//KEner obtained is in g-angs2/mol-fs2, converting it into kJ/mol
 	return KEner*1e4;
-	
+
+
 }
 
 float CalTemp(double KEner, int natoms)
 {
 	float Temp;
+
+
 	Temp = 2*KEner/(3*natoms-1)*1e6/KB/AVG;
+
 	return Temp;
+
+
 }

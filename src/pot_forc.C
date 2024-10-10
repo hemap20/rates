@@ -103,7 +103,7 @@ void morse_force(int atom1, int atom2, double Dist, double **PosIons, double **F
 
 void fixatoms_forces(int natoms, double **ForceIons, int **fixatoms)
 {
-	for(int i = 0; i< natoms;i++)*********
+	for(int i = 0; i< natoms;i++)
 	{
 		for(int j=0;j<3;j++)
 		{

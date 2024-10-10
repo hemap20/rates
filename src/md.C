@@ -20,7 +20,7 @@ void md(double **PosIons, int natoms, float **boxcell, double **vel, double **Fo
 	double forc_conv = 1e-4;
 
 
-	for(int i=0;i<natoms;i++)******************
+	for(int i=0;i<natoms;i++)
 	{
 		for(int j=0;j<3;j++)
 		{
@@ -40,7 +40,7 @@ void md(double **PosIons, int natoms, float **boxcell, double **vel, double **Fo
 
 
 
-	for(int i=0;i<natoms;i++)******************
+	for(int i=0;i<natoms;i++)
 	{
 		for(int j=0;j<3;j++)
 		{

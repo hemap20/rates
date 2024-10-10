@@ -21,8 +21,6 @@ int main(int argc, char **argv)
 	cout<<"******************************************************************"<<endl;
 	cout<<"******************************************************************"<<endl<<endl<<endl;
 
-
-
 	//Start Clock;
 	time_t tim;
 	time(&tim); //pass variable tim to time function 
@@ -272,7 +270,6 @@ int main(int argc, char **argv)
 	}
 
 	//getting positions of each atom
-	//
 	for(i=0;i<natoms;i++)
 	{
 		PosIn>>PosIons[i][0]>>PosIons[i][1]>>PosIons[i][2];
@@ -284,7 +281,6 @@ int main(int argc, char **argv)
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// Generate pair list
-
 	// initialize masses
 
 	string *type;
@@ -292,9 +288,7 @@ int main(int argc, char **argv)
 
 	tmp = 0;
 
-
 	//get the vector of symbols for atoms
-
 	for(i=0;i<n_atomtype;i++)
 	{ 
 		for(int j=0;j<natoms_type[i];j++)
@@ -302,14 +296,10 @@ int main(int argc, char **argv)
 			type[tmp] = atomtype[i];
 			tmp=tmp+1;
 		}		
-
 	}
 
 	//get masses
-
-
 	ini_mass(mass, natoms, type);
-
 
 	//read which atoms to fix /////////////////////////////////////
 
@@ -319,7 +309,6 @@ int main(int argc, char **argv)
 
 	for(i = 0; i< natoms;i++)
 	{
-
 		cout<<type[i]<<"\t";
 		for(int j=0;j<3;j++)
 		{
@@ -351,7 +340,7 @@ int main(int argc, char **argv)
 
 
 	//store bonded and nonbonded pairs in a file and store their parameters///////////////////
-	//
+
 	int nbondatoms, nnonbondatoms;
 
 	system("wc -l bondlist.out > tmp.txt");
@@ -369,11 +358,9 @@ int main(int argc, char **argv)
 	system("rm tmp.txt ");
 	cout<<"No. of nonbonded interactions: "<<nnonbondatoms<<endl;
 
-
 	int *batom1, *batom2, *nbatom1, *nbatom2, **pairs;
 	string *bondpot, *nonbondpot;
 	double **bondpar, **nonbondpar;
-
 
 	batom1=new int [nbondatoms];
 	batom2=new int [nbondatoms];
@@ -390,19 +377,16 @@ int main(int argc, char **argv)
 	for(i=0;i<nbondatoms;i++)
 	{
 		bondpar[i]=new double [3];
-
 	}
 
 	for(i=0;i<nnonbondatoms;i++)
 	{
 		nonbondpar[i]=new double [3];
-
 	}
 
 	for(i=0;i<natoms;i++)
 	{
 		pairs[i]=new int [natoms];
-
 	}
 
 
@@ -413,13 +397,10 @@ int main(int argc, char **argv)
 
 	//print the pairs list
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 	//	print_mat_int(pairs, natoms, natoms, "pairs");
-
 	// Get energy and forces///////////////////////////////////////////////////////////////////////////////
-	double Pot = 0;
 
+	double Pot = 0;
 	Pot = CalEner(PosIons, natoms, boxcell, nbondatoms, batom1, batom2, bondpot, bondpar);
 	Pot = Pot + CalEner(PosIons, natoms, boxcell, nnonbondatoms, nbatom1, nbatom2, nonbondpot, nonbondpar);
 
@@ -433,17 +414,11 @@ int main(int argc, char **argv)
 	//Code for density calculations
 
 	double *density;
-
 	int len=(lim2-lim1)/dx;
-
 	density=new double [len];
-
 	vec_zero(density, len);
-
 	int index;
-
 	int nconf = 0;
-
 
 	//print Coordinates, Forces//////////////////////////////////////////////////////////////////
 	printCoor(PosIons, natoms, type);
@@ -452,69 +427,51 @@ int main(int argc, char **argv)
 	cout<<"\nTotal Potential Energy of the System:  "<<Pot/KJEV<<"\t\t eV"<<endl;
 
 
-	//miimization code
+	//minimization code
 	if(minimize)
         {       
-                minimization(PosIons, natoms, ForceIons, boxcell, Pot,type, fixatoms);
-                print_coor(PosIons, natoms, boxcell,  n_atomtype, natoms_type, atomtype, 0, 0,'w', "CONTCAR");
+        	minimization(PosIons, natoms, ForceIons, boxcell, Pot,type, fixatoms);
+            print_coor(PosIons, natoms, boxcell,  n_atomtype, natoms_type, atomtype, 0, 0,'w', "CONTCAR");
 
+			Pot = CalEner(PosIons, natoms, boxcell, nbondatoms, batom1, batom2, bondpot, bondpar);
+			Pot = Pot + CalEner(PosIons, natoms, boxcell, nnonbondatoms, nbatom1, nbatom2, nonbondpot, nonbondpar);
 
-		Pot = CalEner(PosIons, natoms, boxcell, nbondatoms, batom1, batom2, bondpot, bondpar);
-		Pot = Pot + CalEner(PosIons, natoms, boxcell, nnonbondatoms, nbatom1, nbatom2, nonbondpot, nonbondpar);
+			zeros(natoms, 3 ,ForceIons);
+			CalFor(PosIons, ForceIons, natoms, boxcell, nbondatoms, batom1, batom2, bondpot, bondpar);
+			CalFor(PosIons, ForceIons, natoms, boxcell, nnonbondatoms, nbatom1, nbatom2, nonbondpot, nonbondpar);
 
-		zeros(natoms, 3 ,ForceIons);
-		CalFor(PosIons, ForceIons, natoms, boxcell, nbondatoms, batom1, batom2, bondpot, bondpar);
-		CalFor(PosIons, ForceIons, natoms, boxcell, nnonbondatoms, nbatom1, nbatom2, nonbondpot, nonbondpar);
+			fixatoms_forces(natoms, ForceIons, fixatoms);
 
-		fixatoms_forces(natoms, ForceIons, fixatoms);
+            printCoor(PosIons, natoms, type);
+            printFor(ForceIons,natoms,type);
+			print_carcoor(PosIons, natoms, boxcell,  n_atomtype, natoms_type, atomtype, 0, i,'w', "CONTCAR");
 
-
-                printCoor(PosIons, natoms, type);
-                printFor(ForceIons,natoms,type);
-
-		print_carcoor(PosIons, natoms, boxcell,  n_atomtype, natoms_type, atomtype, 0, i,'w', "CONTCAR");
-
-                cout<<"\nTotal Potential Energy of the System:  "<<Pot/KJEV<<"\t\t eV"<<endl;
-
+            cout<<"\nTotal Potential Energy of the System:  "<<Pot/KJEV<<"\t\t eV"<<endl;
         }       
-
-
-
-
-
-
-
-
-
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	cout<<"******Intitializing Velocities******"<<endl<<endl;
 
 	if(rdvel ==1)
 	{	
-
 		readvel(vel, natoms);
 	}
 	else
 	{
 		randnum =  rand() % 100000;
-
 		ini_vel(vel,  natoms, Temp, mass, randnum, fixatoms);
 	}
-
 
 	if(simann==1)
 	{
 		for(j=0;j<ncycle;j++)
 		{
-
 			simuAnn(PosIons, natoms, boxcell, vel, ForceIons, mass, dt, TempB, TempE, nbondatoms, batom1, batom2, bondpot, bondpar, nnonbondatoms,nbatom1, nbatom2, nonbondpot, nonbondpar, fixatoms, rampsize,rampstep);
 			print_carcoor(PosIons, natoms, boxcell,  n_atomtype, natoms_type, atomtype, 0, i,'w', "CONTCAR.SA");
 			tmp2 = TempB;
 			TempB=TempE;
 			TempE=tmp2;
 		}
-
 	}
 
 	/////////////////
@@ -522,55 +479,63 @@ int main(int argc, char **argv)
 	{
 		for(j=0;j<NMCMD;j++)
 		{
-
 			cout<<"*****hybrid MCMD step No. "<<j<<endl;
-
 			if(j==0)
 				print_coor(PosIons, natoms, boxcell, n_atomtype, natoms_type, atomtype, 0, j,'w', "XDATCAR");
 
-
 			montecarlo(PosIons, natoms, boxcell, mass, type, n_atomtype, natoms_type, atomtype, Temp, nbondatoms, batom1, batom2, bondpot, bondpar, nnonbondatoms, nbatom1, nbatom2, nonbondpot, nonbondpar, fixatoms, pairs);
-
-
 
 			//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 			cout<<"*****Entering the Molecular dynamics code*******"<<endl<<endl;
-
 			cout<<"Starting Equilibration runs for:   "<<nMDeq<<endl<<endl;
 
-			for(i=0;i<nMDeq;i++)*********************
+			#pragma omp parallel
 			{
-				if(i%50==0 && i!=0)
+				for (i = 0; i < nMDeq; i++)  
 				{
-					res_vel(vel, natoms, Temp, mass);
+					// Perform the velocity reset every 50 steps (handled outside the parallel loop)
+					if (i % 50 == 0 && i != 0)
+					{
+						#pragma omp single // Ensure only one thread resets velocities
+						{
+							res_vel(vel, natoms, Temp, mass);
+						}
+					}
+
+					// Reset forces for the current iteration
+					zeros(natoms, 3, ForceIons);
+
+					// Calculate forces
+					CalFor(PosIons, ForceIons, natoms, boxcell, nbondatoms, batom1, batom2, bondpot, bondpar);
+					CalFor(PosIons, ForceIons, natoms, boxcell, nnonbondatoms, nbatom1, nbatom2, nonbondpot, nonbondpar);
+					fixatoms_forces(natoms, ForceIons, fixatoms);
+
+					// Perform molecular dynamics step
+					md(PosIons, natoms, boxcell, vel, ForceIons, mass, dt, Temp, nbondatoms, batom1, batom2, bondpot, bondpar, nnonbondatoms, nbatom1, nbatom2, nonbondpot, nonbondpar, fixatoms);
+
+					// Print status every 10000 iterations (handled outside the parallel region)
+					if (i % 10000 == 0)
+					{
+						#pragma omp critical // Ensure only one thread prints at a time
+						{
+							cout << "MD Eq step no.: " << i << endl;
+							printVel(vel, natoms);
+							print_carcoor(PosIons, natoms, boxcell, n_atomtype, natoms_type, atomtype, 0, i, 'w', "CONTCAR");
+						}
+					}
+
+					// Wrap coordinates every 1000 iterations (handled outside the parallel region)
+					if (i % 1000 == 0)
+					{
+						#pragma omp critical // Ensure only one thread prints at a time
+						{
+							cout << "MD Eq. Step No:  " << i << endl;
+							cout << "*****Wrapping Coordinates" << endl;
+							wrap_coor(PosIons, natoms, boxcell);
+						}
+					}
 				}
-
-
-				zeros(natoms, 3 ,ForceIons);
-				CalFor(PosIons, ForceIons, natoms, boxcell, nbondatoms, batom1, batom2, bondpot, bondpar);
-				CalFor(PosIons, ForceIons, natoms, boxcell, nnonbondatoms, nbatom1, nbatom2, nonbondpot, nonbondpar);
-				fixatoms_forces(natoms, ForceIons, fixatoms);
-
-
-				md(PosIons, natoms, boxcell, vel, ForceIons, mass, dt, Temp, nbondatoms, batom1, batom2, bondpot, bondpar, nnonbondatoms, nbatom1, nbatom2, nonbondpot, nonbondpar,fixatoms);
-
-				if(i%10000==0)
-				{
-					cout<<"MD Eq step no.: "<<i<<endl;
-					printVel(vel, natoms);
-					print_carcoor(PosIons, natoms, boxcell,  n_atomtype, natoms_type, atomtype, 0, i,'w', "CONTCAR");
-
-				}
-
-
-				if(i%1000==0)
-				{
-					cout<<"MD Eq. Step No:  "<<i<<endl;
-					cout<<"*****Wrapping Coordinates"<<endl;
-					wrap_coor(PosIons, natoms, boxcell);
-				}
-
 			}
 
 			cout<<"*****Wrapping Coordinates"<<endl;
@@ -579,67 +544,66 @@ int main(int argc, char **argv)
 			print_carcoor(PosIons, natoms, boxcell,  n_atomtype, natoms_type, atomtype, 0, i,'w', "CONTCAR.eq");
 			cout<<"****************Finished Equilibration runs"<<endl<<endl;
 
-			for(i=0;i<nMD;i++)
+			#pragma omp parallel
 			{
+				// Declare an index variable for the thread
+				int thread_id = omp_get_thread_num();
+				int n_threads = omp_get_num_threads();
 
-				if(i%md_print==0)
+				// Parallelize the loop
+				#pragma omp for
+				for (int i = 0; i < nMD; i++)
 				{
-					cout<<"MD step no.: "<<i<<endl;
-					wrap_coor(PosIons, natoms, boxcell);
-
-					if(trj)
-						print_coor(PosIons, natoms, boxcell, n_atomtype, natoms_type, atomtype, 1, i,'a', "XDATCAR");
-
-
-					print_carcoor(PosIons, natoms, boxcell,  n_atomtype, natoms_type, atomtype, 0, i,'w', "CONTCAR");
-
-					printMD(PosIons, natoms, boxcell, vel, i,nbondatoms, batom1, batom2, bondpot, bondpar, nnonbondatoms, nbatom1, nbatom2, nonbondpot, nonbondpar, fixatoms, pairs, mass);
-
-					printVel(vel, natoms);
-
-					if(comdens)
+					if (i % md_print == 0)
 					{
-						nconf = nconf + 1;
-
-						CalDens(PosIons, natoms, boxcell, n_atomtype, natoms_type, lim1, dx, density, len);
+						// Use critical section to ensure only one thread prints at a time
+						#pragma omp critical
+						{
+							cout << "MD step no.: " << i << endl;
+							wrap_coor(PosIons, natoms, boxcell);
+							if (trj)
+								print_coor(PosIons, natoms, boxcell, n_atomtype, natoms_type, atomtype, 1, i, 'a', "XDATCAR");
+							
+							print_carcoor(PosIons, natoms, boxcell, n_atomtype, natoms_type, atomtype, 0, i, 'w', "CONTCAR");
+							printMD(PosIons, natoms, boxcell, vel, i, nbondatoms, batom1, batom2, bondpot, bondpar, nnonbondatoms, nbatom1, nbatom2, nonbondpot, nonbondpar, fixatoms, pairs, mass);
+							printVel(vel, natoms);
+							
+							if (comdens)
+							{
+								nconf = nconf + 1;
+								CalDens(PosIons, natoms, boxcell, n_atomtype, natoms_type, lim1, dx, density, len);
+							}
+						}
 					}
 
+					// Reset velocities every 10 iterations
+					if (i % 10 == 0 && i != 0)
+					{
+						#pragma omp single // Ensure that only one thread resets velocities
+						{
+							res_vel(vel, natoms, Temp, mass);
+						}
+					}
 
+					// Reset forces for the current iteration
+					zeros(natoms, 3, ForceIons);
+
+					// Calculate forces
+					CalFor(PosIons, ForceIons, natoms, boxcell, nbondatoms, batom1, batom2, bondpot, bondpar);
+					CalFor(PosIons, ForceIons, natoms, boxcell, nnonbondatoms, nbatom1, nbatom2, nonbondpot, nonbondpar);
+					fixatoms_forces(natoms, ForceIons, fixatoms);
+
+					// Perform molecular dynamics step
+					md(PosIons, natoms, boxcell, vel, ForceIons, mass, dt, Temp, nbondatoms, batom1, batom2, bondpot, bondpar, nnonbondatoms, nbatom1, nbatom2, nonbondpot, nonbondpar, fixatoms);
 				}
-
-
-				if(i%10==0 && i!=0)
-				{
-					res_vel(vel, natoms, Temp, mass);
-				}
-
-
-				zeros(natoms, 3 ,ForceIons);
-				CalFor(PosIons, ForceIons, natoms, boxcell, nbondatoms, batom1, batom2, bondpot, bondpar);
-				CalFor(PosIons, ForceIons, natoms, boxcell, nnonbondatoms, nbatom1, nbatom2, nonbondpot, nonbondpar);
-				fixatoms_forces(natoms, ForceIons, fixatoms);
-
-
-				md(PosIons, natoms, boxcell, vel, ForceIons, mass, dt, Temp, nbondatoms, batom1, batom2, bondpot, bondpar, nnonbondatoms, nbatom1, nbatom2, nonbondpot, nonbondpar,fixatoms);
-
-
-
-
 			}
-
-
 			print_carcoor(PosIons, natoms, boxcell,  n_atomtype, natoms_type, atomtype, 0, i,'w', "CONTCAR");
-
 		}	
-
-
-
 	}
 
 
 	if(comdens)
 	{
-
 		double vol = boxcell[1][1]*boxcell[2][2]*dx*AVG/1e24;      ///cm3/mol
 
 		cout<<"**************Printing Densities"<<endl;
@@ -647,7 +611,6 @@ int main(int argc, char **argv)
 		{
 			cout<<(lim1+i*dx+dx/2)<<"\t"<<density[i]<<"\t"<<density[i]/vol/nconf<<endl; //calculates density in mol/cm3 
 		}
-
 	}
 
 

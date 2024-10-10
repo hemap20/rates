@@ -100,7 +100,7 @@ void minimization(double **PosIons, int natoms, double **ForceIons, float **boxc
 
 	PrevPos=new double * [natoms];
 
-	for(int i=0;i<natoms;i++)*****************
+	for(int i=0;i<natoms;i++)
 	{
 		PrevPos[i]=new double [3];
 	}

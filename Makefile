@@ -1,6 +1,8 @@
 CC = /usr/bin/g++	
 DEBUGFLAGS = -Wall -g
-OPTFLAGS = -o3
+CFLAGS = -fopenmp -O2   # Include the OpenMP flag and optimization level
+LDFLAGS = -fopenmp       # Linker flag for OpenMP
+OPTFLAGS = -O3
 
 RUN_DIR=./run
 RAT_OUTPUT=$(RUN_DIR)/rateliq.x
@@ -78,7 +80,7 @@ $(OBJ_DIR)/simuAnn.o:$(SRC_DIR)/simuAnn.C
 
 
 $(RAT_OUTPUT):$(OBJ_FILES)
-	$(CC) $(OPTFLAGS)  $(INC_LIST) -o  $(RAT_OUTPUT) $(OBJ_FILES)
+	$(CC) $(LDFLAGS)  $(INC_LIST) -o  $(RAT_OUTPUT) $(OBJ_FILES)
 
 
 # Clean objects and library

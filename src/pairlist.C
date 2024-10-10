@@ -169,7 +169,6 @@ void readbondpar(int nbondatoms, int *batom1, int *batom2, string *bondpot, doub
 		pairs[batom1[i]][batom2[i]] = -(i+1);
 		pairs[batom2[i]][batom1[i]] = -(i+1);
 
-
 		InputIn>>bondpot[i]>>garbage;
 
 		if(bondpot[i].compare("lj") ==0)
@@ -189,15 +188,10 @@ void readbondpar(int nbondatoms, int *batom1, int *batom2, string *bondpot, doub
 			cerr<<"Check your input, function not available in this version of the Program";
 		}
 
-
 		getline(InputIn, garbage);
-//		printf("%d - %d  %s %11.5f %11.5f %11.5f\n", batom1[i], batom2[i],bondpot[i].c_str(), bondpar[i][0], bondpar[i][1], bondpar[i][2]);  
-
+		// printf("%d - %d  %s %11.5f %11.5f %11.5f\n", batom1[i], batom2[i],bondpot[i].c_str(), bondpar[i][0], bondpar[i][1], bondpar[i][2]);  
 	}
-
-
 	InputIn.close();
-
 }
 
 
@@ -213,7 +207,6 @@ void readnonbondpar(int nnonbondatoms, int *nbatom1, int *nbatom2, string *nonbo
 	}
 	for(int i=0;i<nnonbondatoms; i++)
 	{
-
 		InputIn>>nbatom1[i]>>garbage>>nbatom2[i]>>garbage;
 		InputIn>>garbage>>nonbondpot[i];
 
@@ -236,7 +229,6 @@ void readnonbondpar(int nnonbondatoms, int *nbatom1, int *nbatom2, string *nonbo
 		{
 			cerr<<"Check your input, function not available in this version of the Program";
 		}
-	
 		if(nonbondpot[i].compare("lj") ==0)
 		{
 			InputIn>>nonbondpar[i][0]>>nonbondpar[i][1];
@@ -253,15 +245,8 @@ void readnonbondpar(int nnonbondatoms, int *nbatom1, int *nbatom2, string *nonbo
 		{
 			cerr<<"Check your input, function not available in this version of the Program";
 		}
-
-
-
-//		printf("%d - %d  %s %11.5f %11.5f %11.5f\n", nbatom1[i], nbatom2[i],nonbondpot[i].c_str(), nonbondpar[i][0], nonbondpar[i][1], nonbondpar[i][2]);  
-
+		// printf("%d - %d  %s %11.5f %11.5f %11.5f\n", nbatom1[i], nbatom2[i],nonbondpot[i].c_str(), nonbondpar[i][0], nonbondpar[i][1], nonbondpar[i][2]);  
 	}
-
-
 	InputIn.close();
-
 }
 
