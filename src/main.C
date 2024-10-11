@@ -45,15 +45,9 @@ int main(int argc, char **argv)
 	int hyb, NMCMD, rdvel;
 	float tmp2;
 
-	//////get the name of the file for input variables, default is input.in 
-	if(argc <2)
-		filename = "input.in";
-	else
-		filename = argv[1];
-
 	///////////////////////////////////////////////
 	//////initialize variables////////////////////
-
+	filename = "input.in";
 	ifstream InputIn(filename.c_str(),ios::in);
 	if(!InputIn)
 	{
@@ -547,8 +541,8 @@ int main(int argc, char **argv)
 			#pragma omp parallel
 			{
 				// Declare an index variable for the thread
-				int thread_id = omp_get_thread_num();
 				int n_threads = omp_get_num_threads();
+				int thread_id = omp_get_thread_num();
 
 				// Parallelize the loop
 				#pragma omp for

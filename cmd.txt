@@ -1,3 +1,5 @@
+/usr/lib64/mpi/gcc/openmpi4/lib64/openmpi
+/usr/lib64/mpi/gcc/openmpi4/bin/mpirun -np 4 rateliq.x
 ###to find a file:
 sudo find / -name "contrib" 2>/dev/null
 
@@ -15,6 +17,8 @@ git push origin branch_name --force
 ##cumulative avg of temp, TE from md.out
 awk 'NR>1 {temp_sum += $2; totener_sum += $5; temp_count++; print $1, temp_sum/temp_count, totener_sum/temp_count}' md.out > cumulative_average.txt
 xmgrace cumulative_average.txt
+
+tail -f out
 
 ssh -X krishna@172.31.100.114
 ssh -X adigoyal@172.26.38.178
