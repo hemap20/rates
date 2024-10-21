@@ -6,7 +6,7 @@
 ******************************************************************
 
 
-Simulations started on: Thu Oct 10 20:01:18 2024
+Simulations started on: Fri Oct 18 17:40:54 2024
 
 Project Name:  Test run 
 Compute Density:  1Range of x-values considered for computing densities: 9	170
@@ -19116,4 +19116,4 @@ MD step no.: 95
 169.985	0	0
 169.995	0	0
 
-Execution Time:  4.513 seconds
+Execution Time:  4.91 seconds

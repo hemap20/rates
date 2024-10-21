@@ -541,7 +541,8 @@ int main(int argc, char **argv)
 			#pragma omp parallel
 			{
 				// Declare an index variable for the thread
-				int n_threads = omp_get_num_threads();
+				int n_threads = 6;
+				omp_set_num_threads( n_threads);
 				int thread_id = omp_get_thread_num();
 
 				// Parallelize the loop

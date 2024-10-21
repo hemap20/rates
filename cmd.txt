@@ -24,3 +24,9 @@ ssh -X krishna@172.31.100.114
 ssh -X adigoyal@172.26.38.178
                                                                                                                                                                                                                                              
 /usr/lib64/mpi/gcc/openmpi/bin/mpirun -np 4 rateliq.x
+
+threads Time
+2       4.916
+4       4.564
+5       4.802
+6       4.91
